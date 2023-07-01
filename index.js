@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 //middleware
@@ -30,6 +31,7 @@ async function run() {
     const productsCollection = client.db("modabellaDb").collection("products");
     const cartCollection = client.db("modabellaDb").collection("carts");
     const userCollection = client.db("modabellaDb").collection("users");
+    const paymentCollection = client.db("modabellaDb").collection("payments");
 
     //productsCollection
     app.get("/products", async (req, res) => {
@@ -132,6 +134,33 @@ async function run() {
       };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
+    });
+
+    //create payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "USD",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    //payment
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const insertResult = await paymentCollection.insertOne(payment);
+
+      const query = {
+        _id: { $in: payment.itemsId.map((id) => new ObjectId(id)) },
+      };
+      const deleteResult = await cartCollection.deleteMany(query);
+
+      res.send({ insertResult, deleteResult });
     });
 
     // Send a ping to confirm a successful connection
