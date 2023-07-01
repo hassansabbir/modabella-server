@@ -29,6 +29,7 @@ async function run() {
 
     const productsCollection = client.db("modabellaDb").collection("products");
     const cartCollection = client.db("modabellaDb").collection("carts");
+    const userCollection = client.db("modabellaDb").collection("users");
 
     //productsCollection
     app.get("/products", async (req, res) => {
@@ -53,6 +54,18 @@ async function run() {
       const item = req.body;
       console.log(item);
       const result = await cartCollection.insertOne(item);
+      res.send(result);
+    });
+
+    //userCollection
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "User already exists" });
+      }
+      const result = await userCollection.insertOne(user);
       res.send(result);
     });
 
