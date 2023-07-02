@@ -51,6 +51,29 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/products/approve/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await productsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/products/denied/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "denied",
+        },
+      };
+      const result = await productsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     //cartCollection
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
