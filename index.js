@@ -46,6 +46,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/allProducts/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { sellerEmail: email };
+      const result = await productsCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/products", async (req, res) => {
       const result = await productsCollection.insertOne(req.body);
       res.send(result);
