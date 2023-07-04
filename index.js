@@ -189,6 +189,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/myPayments/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { user: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/payments", async (req, res) => {
       const payment = req.body;
       const insertResult = await paymentCollection.insertOne(payment);
